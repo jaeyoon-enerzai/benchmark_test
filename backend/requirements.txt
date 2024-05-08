@@ -1,0 +1,10 @@
+flask==2.2.5
+pymongo
+mongoengine
+flask-mongoengine
+flask-cors
+typing-extensions
+pycryptodome
+pyyaml
+pyjwt
+mod-wsgi

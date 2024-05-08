@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: benchmarktest
+    # restart: unless-stopped
+    working_dir: "/workspace"
+    command: ./testrun.sh
+    ports:
+      - "5001:5000"
+    volumes:
+      - type: bind
+        source: "./backend/benchmark"
+        target: "/workspace/benchmark"
+    links:
+      - "db"
+    environment:
+      - "FLASK_DEBUG=true"
+    
+  db:
+    image: "mongo:6"
+    container_name : "db"
+    # restart: always
+    volumes:
+      - type: bind
+        source: "${DATA_ROOT}/db"
+        target: "/data/db"
+    ports:
+      - "27017:27017"
