@@ -8,3 +8,4 @@ pycryptodome
 pyyaml
 pyjwt
 mod-wsgi
+numpy
