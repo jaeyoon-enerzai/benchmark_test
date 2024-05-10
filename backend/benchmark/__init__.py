@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
 from mongoengine import connect
-from api import layer_bp, model_bp
+from api import layer_bp, model_bp, group_bp
 from werkzeug.exceptions import BadRequest
 
 app = Flask(__name__)
@@ -17,6 +17,7 @@ db.init_app(app)
 
 app.register_blueprint(layer_bp)
 app.register_blueprint(model_bp)
+app.register_blueprint(group_bp)
 
 # @app.route('/modelupload')
 # def upload_model():
