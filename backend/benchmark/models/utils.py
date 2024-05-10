@@ -1,21 +1,26 @@
-from models.layer import LayerDB
-from utils import make_query_dict
-
-def get_or_create_layer(opcode, attr, input_shape, device, commit, commitdate):
-    # find if a layer exists or not
-    querydict = make_query_dict(attr, "attr")
-    querydict['input_shape'] = input_shape
-    querydict['opcode'] = opcode
-    querydict['device'] = device
-
-    layer = LayerDB.objects(**querydict)
-    if len(layer) == 0:
-        layer = LayerDB(opcode=opcode, device=device, input_shape = input_shape)
-        for k_, v_ in attr.items():
-            layer.attr[k_] = v_
-        layer.save()
-    elif len(layer) == 1:
-        layer = layer[0]
+def tuple_to_list(data):
+    if isinstance(data, dict):
+        return {k: tuple_to_list(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [tuple_to_list(item) for item in data]
+    elif isinstance(data, tuple):
+        return [tuple_to_list(item) for item in data]
     else:
-        raise RuntimeError("Layer must be unique but there are more than one")
-    return layer
+        return data
+    
+
+def make_query_dict(data_dict, prefix :str =""):
+    """return query format dictionary from given data dictionary and prefix
+
+    Args:
+        data_dict (_type_): dictionary with query data
+        prefix (str, optional): prefix. Defaults to "".
+        
+    Example) make_query_dict({'a': 1, 'b':2}, 'data__example')
+    => return {'data__example__a' : 1, 'data__example__b': 2}
+    """
+    if prefix == "":
+        return data_dict
+    else:
+        return {f'{prefix}__{k}' : v for k, v in data_dict.items()}
+    
