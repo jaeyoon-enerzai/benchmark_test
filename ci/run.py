@@ -1,5 +1,6 @@
 # optimium import
 import argparse
+import numpy as np
 import os
 import subprocess
 import datetime
@@ -157,6 +158,29 @@ def _tuning_scenario(device):
     # 7. cleanup
     cleanup(opcode, attr, device, input_shape, group, commit, commitdate)   
     
+def model_get_latency(modelname, framework, input_shape, device, commit, group):
+    return ModelLoader(modelname, framework, input_shape, device, commit, group).get_latency()['median']
+
+def model_compare_latency(modelname, framework, input_shape, device, commit, group):
+    stat_dict = ModelLoader(modelname, framework, input_shape, device, commit, group).get_all_result()
+    # best median under same group
+    best_latency_same_group = np.inf
+    best_commit_same_group = None
+    for com in stat_dict[group]:
+        if best_latency_same_group > stat_dict[group][com][0]:
+            best_latency_same_group = stat_dict[group][com][0]
+            best_commit_same_group = com
+    # best medain across all group
+    best_latency = np.inf
+    best_commit = None
+    best_group = None
+    for grp in stat_dict:
+        for com in stat_dict[grp]:
+            if best_latency > stat_dict[grp][com][0]:
+                best_latency = stat_dict[grp][com][0]
+                best_commit = com
+                best_group = grp
+    return (best_latency_same_group, best_commit_same_group), (best_latency, best_commit, best_group)
 
 if __name__ == '__main__':
     # main 부분은 바뀔 것 - optimium script와 함께 config도 사용하면서
@@ -202,6 +226,28 @@ if __name__ == '__main__':
     date = datetime.datetime.now()
     upload_model_latency(modelname, framework, input_shape, device, commit, group, date, latency)
     
+    # move this line at the front of ci code (not running for each model)
     content, strnum_list = create_table_header(commit, commit, commit)
     with open(Path(__file__).parent / '../ciout/result.md', 'w') as f:
         f.write(content)
+    
+    with open(Path(__file__).parent / '../ciout/result.md', 'a') as f:
+        f.write('\n')
+        f.write(f'|{modelname:^{strnum_list[0]}}<br>') # model name
+        f.write(f'|{latency:^{strnum_list[1]}}<br>') # current run
+        current_commit_latency = model_get_latency(modelname, framework, input_shape, device, commit, group)
+        ratio = np.round(float(current_commit_latency) / latency * 100 - 100, 2)
+        current_commit_latency = np.round(current_commit_latency, 2)
+        content = f'{current_commit_latency} ({ratio}%)'
+        f.write(f'|{content:^{strnum_list[2]}}<br>')
+        (best_latency_same_group, best_commit_same_group), (best_latency, best_commit, best_group) = model_compare_latency(modelname, framework, input_shape, device, commit, group)
+        ratio = np.round(float(best_latency_same_group) / latency * 100 - 100, 2)
+        best_latency_same_group = np.round(best_latency_same_group, 2)
+        content = f'{best_latency_same_group} ({ratio}%)'
+        content = f'{content:^{strnum_list[3]}}<br> {best_commit_same_group[:8]:^{strnum_list[3]}}'
+        f.write(f'|{content}')
+        ratio = np.round(float(best_latency) / latency * 100 - 100, 2)
+        best_latency = np.round(best_latency, 2)
+        content = f'{best_latency} ({ratio}%)'
+        content = f'{content:^{strnum_list[4]}}<br> {best_commit[:8]:^{strnum_list[4]}} in group {best_group[:8]}'
+        f.write(f'|{content}|')        

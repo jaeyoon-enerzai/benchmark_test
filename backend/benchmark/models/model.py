@@ -2,7 +2,7 @@ from models.device import DeviceFarm
 from models.group import GroupDB
 import datetime
 import mongoengine as me
-
+import numpy as np
 
 
 class Latency(me.EmbeddedDocument):
@@ -27,6 +27,7 @@ class ModelDB(me.Document):
         if self.profile_stat is None:
             self.profile_stat = Profile()
         self.profile_stat.latencies.append(Latency(date=date, latency=latency))
+        self.profile_stat.median = np.median([l_.latency for l_ in self.profile_stat.latencies])
         self.save()
     
     def get_latency(self):
