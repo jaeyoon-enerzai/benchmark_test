@@ -25,7 +25,7 @@ def get_group(device : DeviceFarm, target_arch, SSH_PORT, SSH_ADDR):
     os.system(f"scp -P {SSH_PORT} {tflitepath}  optima-remote@{SSH_ADDR}:{USER_DIR}")
     try:
         result = subprocess.run(
-            f"ssh -S $HOME/.ssh/ssh-mux/%r@%h:%p -p {SSH_PORT} {SSH_ADDR} bash run_benchmark.sh --arch {arch} --tfl_model {tflitepath.name} "
+            f"ssh -p {SSH_PORT} optima-remote@{SSH_ADDR} bash run_benchmark.sh --arch {arch} --tfl_model {tflitepath.name} "
             + "--run_tflite "
             + f"--repeat {repeat} --warmup {warmup} --num_threads {num_threads}",
             shell=True,
