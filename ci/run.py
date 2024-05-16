@@ -107,15 +107,8 @@ def get_best_optim(opcode, attr, device, input_shape, group, commit, commitdate,
 def upload_model_latency(modelname, framework, input_shape, device, commit, group, date, latency):
     ModelLoader(modelname, framework, input_shape, device, commit, group).upload_model(date, latency)
 
-if __name__ == '__main__':
-    # main 부분은 바뀔 것 - optimium script와 함께 config도 사용하면서
-    ### Tuning logic ###
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--device', required=True)
-    args = parser.parse_args()
+def _tuning_scenario(device):
     from device import ssh_addr_map, ssh_port_map, arch_map
-    device = getattr(DeviceFarm, args.device.upper())
-    
     # 1. Set group
     group = get_group(device, arch_map[device], ssh_port_map[device], ssh_addr_map[device])
     
@@ -161,6 +154,20 @@ if __name__ == '__main__':
     
     # 7. cleanup
     cleanup(opcode, attr, device, input_shape, group, commit, commitdate)   
+    
+
+if __name__ == '__main__':
+    # main 부분은 바뀔 것 - optimium script와 함께 config도 사용하면서
+    ### Tuning logic ###
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--device', required=True)
+    parser.add_argument("--tuning", action="store_true", default=False)
+    args = parser.parse_args()
+    from device import ssh_addr_map, ssh_port_map, arch_map
+    device = getattr(DeviceFarm, args.device.upper())
+    
+    if args.tuning:
+        _tuning_scenario(device)
     
     ### CI logic ###
     # 1. Set group

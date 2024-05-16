@@ -4,4 +4,4 @@ blahblah
 
 ## AUTONOMOUS BENCHMARK RESULT
 
-[a relative link](ciout/result.md) 
+[See benchmark result](ciout/result.md) 

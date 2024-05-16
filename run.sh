@@ -8,4 +8,4 @@ cd uploader
 pip install -e .
 
 cd ../
-python ci/run.py
+python ci/run.py --device AVOCADO
