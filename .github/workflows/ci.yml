@@ -41,4 +41,5 @@ jobs:
 
       - name: Change owner byproucts
         if : always()
-        shell: chown -R $(id -u):$(id -g) ${{ github.workspace }}
+        shell: bash
+        run: chown -R $(id -u):$(id -g) ${{ github.workspace }}
