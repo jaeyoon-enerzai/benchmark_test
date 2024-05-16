@@ -35,6 +35,7 @@ jobs:
 
       - name: Git push result
         run: |
+          git config --global --add safe.directory /workspace/benchmark
           git config --global user.name 'enerzai'
           git config --global user.email 'enerzai@enerzai.com'
           git add ciout/result.md
