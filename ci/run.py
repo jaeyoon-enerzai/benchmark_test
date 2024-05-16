@@ -83,6 +83,8 @@ def get_optims(opcode, attr, device, input_shape, group, commit, commitdate, new
         prevcommits = layer.get_commits()
         if len(prevcommits['commits']) > 0:
             commit, commitdate = prevcommits['commits'][0]
+            commitdate = datetime.datetime.strptime(commitdate, '%a, %d %b %Y %H:%M:%S %Z')
+       
     return LayerLoader(attr, input_shape, opcode, device, commit, commitdate, group).get_all_optim()
 
 def load_profile(opcode, attr, device, input_shape, group, commit, commitdate, newcommit):
@@ -91,7 +93,7 @@ def load_profile(opcode, attr, device, input_shape, group, commit, commitdate, n
     else:
         return LayerLoader(attr, input_shape, opcode, device, commit, commitdate, group).get_profiles()
 
-def upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, date, latency):
+def upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, optim_param, date, latency):
     LayerLoader(attr, input_shape, opcode, device, commit, commitdate, group).upload_layer(optim_param,
                                latency, date, )    
 
@@ -150,7 +152,7 @@ def _tuning_scenario(device):
     print(optim_param, latency)
 
     # 6. upload latency
-    upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, date, latency)
+    upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, optim_param, date, latency)
     
     # 7. cleanup
     cleanup(opcode, attr, device, input_shape, group, commit, commitdate)   
