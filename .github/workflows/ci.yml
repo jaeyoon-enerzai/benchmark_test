@@ -42,4 +42,4 @@ jobs:
       - name: Change owner byproucts
         if : always()
         shell: bash
-        run: chown -R $(id -u):$(id -g) ${{ github.workspace }}
+        run: docker run --rm -e "USERID=$(id -u)" -e "GROUPID=$(id -g)" -t -v ${{ github.workspace }}:/workspace/benchmark python:3.10.14-bullseye /bin/sh -c "chown -R $USERID:$GROUPID /workspace/benchmark" 

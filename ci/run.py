@@ -186,7 +186,7 @@ if __name__ == '__main__':
     # for each layer in model (2~3)
     from diff_match import diff_to_monitor
     # 2. Get commit
-    commit, commitdate, newcommit = get_commit4layer(opcode, attr, device, input_shape, group, diff_to_monitor[opcode], '/home/yoo/enerzai_github/benchmark_test')
+    commit, commitdate, newcommit = get_commit4layer(opcode, attr, device, input_shape, group, diff_to_monitor[opcode], str(Path(__file__).parent.parent))
     
     # 3. Get best optim
     best_optim = get_best_optim(opcode, attr, device, input_shape, group, commit, commitdate, newcommit)   
