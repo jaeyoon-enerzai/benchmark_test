@@ -7,7 +7,7 @@ from pathlib import Path
 import git
 import random
 from uploader import DeviceFarm, GroupLoader, LayerLoader, ModelLoader
-from .table import create_table_header
+from table import create_table_header
 
 def get_group(device : DeviceFarm, target_arch, SSH_PORT, SSH_ADDR):
     if target_arch.lower() in ("i386", "amd64", "x86_64", "x64"):
