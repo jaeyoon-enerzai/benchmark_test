@@ -32,3 +32,9 @@ jobs:
         shell: bash
         run: |
           docker run --rm -t -v ~/.ssh/id_ed25519.pub:/root/.ssh/id_rsa.pub -v ~/.ssh/id_ed25519:/root/.ssh/id_rsa -v ${{ github.workspace }}:/workspace/benchmark python:3.10.14-bullseye /bin/sh -c "cd /workspace/benchmark && ./run.sh"
+
+      - name: Git push result
+        run: |
+          git add ciout/result.md
+          git commit -m "[skip ci] result.md updated."
+          git push
