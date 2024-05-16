@@ -4,5 +4,6 @@ description = "Uploader for tuning database and CI data"
 version = "0.0.1"
 requires-python = ">=3.7"
 dependencies = [
-    "requests"
+    "requests",
+    "gitpython"
 ]

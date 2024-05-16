@@ -7,7 +7,7 @@ from pathlib import Path
 import git
 import random
 from uploader import DeviceFarm, GroupLoader, LayerLoader, ModelLoader
-
+from table import create_table_header
 
 def get_group(device : DeviceFarm, target_arch, SSH_PORT, SSH_ADDR):
     if target_arch.lower() in ("i386", "amd64", "x86_64", "x64"):
@@ -25,7 +25,7 @@ def get_group(device : DeviceFarm, target_arch, SSH_PORT, SSH_ADDR):
     os.system(f"scp -P {SSH_PORT} {tflitepath}  optima-remote@{SSH_ADDR}:{USER_DIR}")
     try:
         result = subprocess.run(
-            f"ssh -S $HOME/.ssh/ssh-mux/%r@%h:%p -p {SSH_PORT} {SSH_ADDR} bash run_benchmark.sh --arch {arch} --tfl_model {tflitepath.name} "
+            f"ssh -p {SSH_PORT} optima-remote@{SSH_ADDR} bash run_benchmark.sh --arch {arch} --tfl_model {tflitepath.name} "
             + "--run_tflite "
             + f"--repeat {repeat} --warmup {warmup} --num_threads {num_threads}",
             shell=True,
@@ -83,6 +83,8 @@ def get_optims(opcode, attr, device, input_shape, group, commit, commitdate, new
         prevcommits = layer.get_commits()
         if len(prevcommits['commits']) > 0:
             commit, commitdate = prevcommits['commits'][0]
+            commitdate = datetime.datetime.strptime(commitdate, '%a, %d %b %Y %H:%M:%S %Z')
+       
     return LayerLoader(attr, input_shape, opcode, device, commit, commitdate, group).get_all_optim()
 
 def load_profile(opcode, attr, device, input_shape, group, commit, commitdate, newcommit):
@@ -91,7 +93,7 @@ def load_profile(opcode, attr, device, input_shape, group, commit, commitdate, n
     else:
         return LayerLoader(attr, input_shape, opcode, device, commit, commitdate, group).get_profiles()
 
-def upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, date, latency):
+def upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, optim_param, date, latency):
     LayerLoader(attr, input_shape, opcode, device, commit, commitdate, group).upload_layer(optim_param,
                                latency, date, )    
 
@@ -124,7 +126,7 @@ def _tuning_scenario(device):
 
     from diff_match import diff_to_monitor
     # 2. Get commit
-    commit, commitdate, newcommit = get_commit4layer(opcode, attr, device, input_shape, group, diff_to_monitor[opcode], '/home/yoo/enerzai_github/benchmark_test')
+    commit, commitdate, newcommit = get_commit4layer(opcode, attr, device, input_shape, group, diff_to_monitor[opcode], str(Path(__file__).parent.parent))
     
     # 3. Load profile
     profile_result = load_profile(opcode, attr, device, input_shape, group, commit, commitdate, newcommit)
@@ -150,7 +152,7 @@ def _tuning_scenario(device):
     print(optim_param, latency)
 
     # 6. upload latency
-    upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, date, latency)
+    upload_latency(opcode, attr, device, input_shape, group, commit, commitdate, optim_param, date, latency)
     
     # 7. cleanup
     cleanup(opcode, attr, device, input_shape, group, commit, commitdate)   
@@ -186,7 +188,7 @@ if __name__ == '__main__':
     # for each layer in model (2~3)
     from diff_match import diff_to_monitor
     # 2. Get commit
-    commit, commitdate, newcommit = get_commit4layer(opcode, attr, device, input_shape, group, diff_to_monitor[opcode], '/home/yoo/enerzai_github/benchmark_test')
+    commit, commitdate, newcommit = get_commit4layer(opcode, attr, device, input_shape, group, diff_to_monitor[opcode], str(Path(__file__).parent.parent))
     
     # 3. Get best optim
     best_optim = get_best_optim(opcode, attr, device, input_shape, group, commit, commitdate, newcommit)   
@@ -199,3 +201,7 @@ if __name__ == '__main__':
     latency = random.random()
     date = datetime.datetime.now()
     upload_model_latency(modelname, framework, input_shape, device, commit, group, date, latency)
+    
+    content, strnum_list = create_table_header(commit, commit, commit)
+    with open(Path(__file__).parent / '../ciout/result.md', 'w') as f:
+        f.write(content)
