@@ -1,9 +1,10 @@
 from models.group import GroupDB, Latency
 import random, string
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint, request
 from models.device import DeviceFarm
 import datetime
 import numpy as np
+import uuid
 
 bp = Blueprint("group", __name__, url_prefix="/group")
 
@@ -15,24 +16,22 @@ def get_all_groups():
     groups = GroupDB.objects()
     return jsonify(groups), 200
 
-@bp.route('/set_group')
+@bp.route('/set_group', methods=('GET',))
 def set_group():
-    # TODO - parse from args
-    device = DeviceFarm.LIME
-    latency = random.random()
-    date = datetime.datetime.now()
-    
+    data = request.json.get('data')
+    device = data['device']
+    latency = data['latency']
+    date = datetime.datetime.fromtimestamp(data['date'])
     tolerance = 0.15
-    
+        
     groups = GroupDB.objects(device=device)
     lat = Latency(latency=latency, date=date) 
     if len(groups) == 0:
         # empty group for the device
-        groupkey = randomkey_generator()
-        newgrp = GroupDB(device=device, group=groupkey, median=latency)
+        newgrp = GroupDB(device=device, median=latency)
         newgrp.latencies.append(lat)
         newgrp.save()
-        return jsonify({'group' : groupkey}), 200
+        return jsonify({'group' : newgrp.group}), 200
     else:
         selected_diff_ratio = np.inf
         selected_group = None
@@ -45,11 +44,7 @@ def set_group():
                     selected_group = group
         if selected_group is None:
             # No other group under tolerance -> this is a new group
-            groupkey = randomkey_generator()
-            existing_groups = [g_.group for g_ in groups]
-            while groupkey in existing_groups:
-                groupkey = randomkey_generator()
-            newgrp = GroupDB(device=device, group=groupkey)
+            newgrp = GroupDB(device=device)
             selected_group = newgrp
         selected_group.latencies.append(lat)
         # median update
