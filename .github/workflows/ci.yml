@@ -15,9 +15,6 @@ jobs:
     runs-on: [ self-hosted, linux, Garnet ]
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
-          token: ${{ secrets.CI_TOKEN }}
       - name: Get branch name (merge)
         if: github.event_name != 'pull_request'
         shell: bash
