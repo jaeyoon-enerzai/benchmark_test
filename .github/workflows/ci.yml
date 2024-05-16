@@ -38,3 +38,7 @@ jobs:
           git add ciout/result.md
           git commit -m "[skip ci] result.md updated."
           git push
+
+      - name: Change owner byproucts
+        if : always()
+        shell: chown -R $(id -u):$(id -g) ${{ github.workspace }}
