@@ -87,17 +87,17 @@ def get_all_result():
     device = data['device']
     input_shape = data['input_shape']
     framework = data['framework']
-    groupid = data['groupid'] 
     
-    group = GroupDB.objects(group=groupid).first()
     models = ModelDB.objects(modelname=modelname, framework=framework, 
-                             input_shape=input_shape, device=device,
-                             group=group)   
-
+                             input_shape=input_shape, device=device)   
     result = {}
     for model in models:
         commit = model.commit
+        group = model.group.group
         latdata = [(lat.date, lat.latency) for lat in  model.profile_stat.latencies]
-        result[commit] = latdata
+        if group in result:
+            result[group][commit] = (model.profile_stat.median, latdata)
+        else:
+            result[group] = {commit: (model.profile_stat.median, latdata)}
     return jsonify(result), 200
         
