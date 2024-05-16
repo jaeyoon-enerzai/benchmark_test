@@ -7,7 +7,7 @@ from pathlib import Path
 import git
 import random
 from uploader import DeviceFarm, GroupLoader, LayerLoader, ModelLoader
-
+from .table import create_table_header
 
 def get_group(device : DeviceFarm, target_arch, SSH_PORT, SSH_ADDR):
     if target_arch.lower() in ("i386", "amd64", "x86_64", "x64"):
@@ -199,3 +199,7 @@ if __name__ == '__main__':
     latency = random.random()
     date = datetime.datetime.now()
     upload_model_latency(modelname, framework, input_shape, device, commit, group, date, latency)
+    
+    content, strnum_list = create_table_header(commit, commit, commit)
+    with open(Path(__file__).parent / '../ciout/result.md', 'w') as f:
+        f.write(content)
