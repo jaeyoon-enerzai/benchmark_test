@@ -41,7 +41,7 @@ jobs:
           git add ciout/result.md
           git commit -m "[skip ci] result.md updated."
           echo $BRANCH_NAME
-          git push $BRANCH_NAME
+          git push origin $BRANCH_NAME
 
       - name: Change owner byproucts
         if : always()
